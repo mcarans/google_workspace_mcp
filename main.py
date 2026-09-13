@@ -364,11 +364,16 @@ def _systemd_activation_sockets() -> list[socket.socket] | None:
     listen_fds = os.environ.get("LISTEN_FDS")
     if not listen_pid or not listen_fds:
         return None
-    if int(listen_pid) != os.getpid():
+    try:
+        pid_matches = int(listen_pid) == os.getpid()
+        fd_count = int(listen_fds)
+    except ValueError:
+        return None
+    if not pid_matches or fd_count <= 0:
         return None
     os.environ.pop("LISTEN_PID", None)
     os.environ.pop("LISTEN_FDS", None)
-    return [socket.socket(fileno=fd) for fd in range(3, 3 + int(listen_fds))]
+    return [socket.socket(fileno=fd) for fd in range(3, 3 + fd_count)]
 
 
 def _disabled_tools_field(disabled_tools: set[str]) -> tuple[str, str, str]:

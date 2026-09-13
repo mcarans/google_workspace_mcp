@@ -36,6 +36,39 @@ def test_systemd_activation_sockets_none_on_pid_mismatch(monkeypatch):
     assert main._systemd_activation_sockets() is None
 
 
+def test_systemd_activation_sockets_none_on_malformed_listen_pid(monkeypatch):
+    monkeypatch.setenv("LISTEN_PID", "not-a-pid")
+    monkeypatch.setenv("LISTEN_FDS", "1")
+
+    assert main._systemd_activation_sockets() is None
+    # A parse failure must not consume the env vars.
+    assert os.environ.get("LISTEN_PID") == "not-a-pid"
+    assert os.environ.get("LISTEN_FDS") == "1"
+
+
+def test_systemd_activation_sockets_none_on_malformed_listen_fds(monkeypatch):
+    monkeypatch.setenv("LISTEN_PID", str(os.getpid()))
+    monkeypatch.setenv("LISTEN_FDS", "not-a-number")
+
+    assert main._systemd_activation_sockets() is None
+    assert os.environ.get("LISTEN_PID") == str(os.getpid())
+    assert os.environ.get("LISTEN_FDS") == "not-a-number"
+
+
+def test_systemd_activation_sockets_none_on_zero_listen_fds(monkeypatch):
+    monkeypatch.setenv("LISTEN_PID", str(os.getpid()))
+    monkeypatch.setenv("LISTEN_FDS", "0")
+
+    assert main._systemd_activation_sockets() is None
+
+
+def test_systemd_activation_sockets_none_on_negative_listen_fds(monkeypatch):
+    monkeypatch.setenv("LISTEN_PID", str(os.getpid()))
+    monkeypatch.setenv("LISTEN_FDS", "-1")
+
+    assert main._systemd_activation_sockets() is None
+
+
 def test_systemd_activation_sockets_returns_inherited_sockets(monkeypatch):
     bound = _bind_loopback_socket()
     expected_port = bound.getsockname()[1]
