@@ -54,6 +54,13 @@
       "sensitive": false,
       "required": false,
       "default": ""
+    },
+    "single_user": {
+      "title": "Single-user mode",
+      "description": "Set to 1 to bypass session mapping and use the one set of cached credentials in the credentials directory -- for a single local Claude Code user over stdio. Leave empty for multi-user OAuth 2.0 (default). Cannot combine with OAuth 2.1.",
+      "type": "string",
+      "sensitive": false,
+      "required": false
     }
   },
   "mcpServers": {
@@ -68,7 +75,8 @@
         "WORKSPACE_MCP_READ_ONLY": "${user_config.read_only}",
         "WORKSPACE_MCP_PERMISSIONS": "${user_config.permissions}",
         "OAUTHLIB_INSECURE_TRANSPORT": "1",
-        "WORKSPACE_MCP_HTTP_PORT": "${user_config.http_port}"
+        "WORKSPACE_MCP_HTTP_PORT": "${user_config.http_port}",
+        "MCP_SINGLE_USER_MODE": "${user_config.single_user}"
       }
     }
   }
